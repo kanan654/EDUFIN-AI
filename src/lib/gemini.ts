@@ -5,7 +5,7 @@ const apiKey = "AIzaSyCiknw1CvPT09T94ZzIiHGrjIZUi4T6CP4";
 console.log("Kanan, Key Load Ho Gayi Hai!", apiKey.substring(0, 5));
 
 // Is line ko dhyan se dekhiye, maine syntax update kiya hai
-const ai = new GoogleGenAI(apiKey);
+const ai = new GoogleGenAI({ apiKey: apiKey });
 
 export const models = {
   flash: 'gemini-1.5-flash',
