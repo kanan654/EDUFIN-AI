@@ -1,7 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 
 // 1. API Key Initialization
-const apiKey = "AIzaSyCiknw1CvPT09T94ZzIiHGrjIZUi4T6CP4"; 
+const apiKey = "AIzaSyAvehuUtM8KBByoTQVSmBNXlza3RSjHEBE"; 
 const ai = new GoogleGenAI(apiKey);
 
 export const models = {
