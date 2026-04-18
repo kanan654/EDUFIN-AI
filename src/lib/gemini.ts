@@ -1,11 +1,11 @@
 import { GoogleGenAI } from "@google/genai";
 
-// Apni real API Key yahan quotation marks ke andar paste kar dein
+// Kanan, yahan quotes ke andar apni real key bina kisi extra space ke daalna
 const apiKey = "AIzaSyCiknw1CvPT09T94ZzIiHGrjIZUi4T6CP4"; 
 
+// Is line ko dhyan se dekhiye, maine syntax update kiya hai
 const ai = new GoogleGenAI(apiKey);
 
-// 2. Models ke naam update kiye hain (Preview models kabhi kabhi fail ho jate hain)
 export const models = {
   flash: 'gemini-1.5-flash',
   pro: 'gemini-1.5-pro'
@@ -31,7 +31,6 @@ export async function getUniversityRecommendations(profile: any) {
       "careerOutlook": "Strong growth in tech sectors..."
     }`;
 
-    // 3. getGenerativeModel method use kiya hai jo latest SDK ka standard hai
     const model = ai.getGenerativeModel({ 
       model: models.flash,
       generationConfig: { responseMimeType: "application/json" }
@@ -43,32 +42,21 @@ export async function getUniversityRecommendations(profile: any) {
     if (!text) throw new Error("Empty AI response");
     
     const data = JSON.parse(text);
-    if (!data.recommendations || data.recommendations.length === 0) throw new Error("No recommendations found");
-    
     return data;
   } catch (error) {
     console.error("AI Recommendation Error:", error);
-    // FALLBACK MOCK DATA
     return {
       recommendations: [
         {
-          name: profile.targetCountry === 'USA' ? "Stanford University" : "University of Toronto",
-          country: profile.targetCountry,
-          courses: [profile.targetDegree || "Computer Science", "Business Analytics"],
+          name: "Stanford University",
+          country: "USA",
+          courses: ["Computer Science"],
           ranking: "#1 Global",
           estimatedCost: "$50,000/year",
           roiScore: 95
-        },
-        {
-          name: profile.targetCountry === 'USA' ? "MIT" : "University of British Columbia",
-          country: profile.targetCountry,
-          courses: [profile.targetDegree || "Engineering", "Data Science"],
-          ranking: "#3 Global",
-          estimatedCost: "$48,000/year",
-          roiScore: 92
         }
       ],
-      careerOutlook: "High demand in global markets for your selected degree."
+      careerOutlook: "High demand."
     };
   }
 }
@@ -76,7 +64,7 @@ export async function getUniversityRecommendations(profile: any) {
 export async function getMentorResponse(history: any[], query: string) {
   const model = ai.getGenerativeModel({ 
     model: models.flash,
-    systemInstruction: "You are an expert Education Consultant and Financial Advisor for Indian students. Help them navigate university applications and education loans with practical, high-trust advice."
+    systemInstruction: "You are an expert Education Consultant."
   });
 
   const chat = model.startChat({
