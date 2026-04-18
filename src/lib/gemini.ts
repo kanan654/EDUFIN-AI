@@ -1,17 +1,15 @@
 import { GoogleGenAI } from "@google/genai";
 
-// Kanan, yahan quotes ke andar apni real key bina kisi extra space ke daalna
+// 1. API Key Initialization
 const apiKey = "AIzaSyCiknw1CvPT09T94ZzIiHGrjIZUi4T6CP4"; 
-console.log("Kanan, Key Load Ho Gayi Hai!", apiKey.substring(0, 5));
-
-// Is line ko dhyan se dekhiye, maine syntax update kiya hai
-const ai = new GoogleGenAI({ apiKey: apiKey });
+const ai = new GoogleGenAI(apiKey);
 
 export const models = {
   flash: 'gemini-1.5-flash',
   pro: 'gemini-1.5-pro'
 };
 
+// 2. University Recommendations Function
 export async function getUniversityRecommendations(profile: any) {
   try {
     const prompt = `Based on this student profile, recommend 5 top universities and specific courses that fit their goals. 
@@ -41,9 +39,7 @@ export async function getUniversityRecommendations(profile: any) {
     const text = result.response.text();
     
     if (!text) throw new Error("Empty AI response");
-    
-    const data = JSON.parse(text);
-    return data;
+    return JSON.parse(text);
   } catch (error) {
     console.error("AI Recommendation Error:", error);
     return {
@@ -57,24 +53,32 @@ export async function getUniversityRecommendations(profile: any) {
           roiScore: 95
         }
       ],
-      careerOutlook: "High demand."
+      careerOutlook: "High demand in global markets."
     };
   }
 }
 
+// 3. Mentor Response Function (Fixed History Logic)
 export async function getMentorResponse(history: any[], query: string) {
-  const model = ai.getGenerativeModel({ 
-    model: models.flash,
-    systemInstruction: "You are an expert Education Consultant."
-  });
+  try {
+    const model = ai.getGenerativeModel({ 
+      model: models.flash,
+      systemInstruction: "You are an expert Education Consultant and Financial Advisor for Indian students. Help them navigate university applications and education loans with practical, high-trust advice."
+    });
 
-  const chat = model.startChat({
-    history: history.map(h => ({
-      role: h.role === 'user' ? 'user' : 'model',
-      parts: [{ text: h.content }]
-    }))
-  });
+    // Gemini expects history in a specific role/parts format
+    const chat = model.startChat({
+      history: history.length > 0 ? history.map(h => ({
+        role: h.role === 'user' ? 'user' : 'model',
+        parts: [{ text: h.content || h.text || "" }]
+      })) : []
+    });
 
-  const result = await chat.sendMessage(query);
-  return result.response.text();
+    const result = await chat.sendMessage(query);
+    const response = await result.response;
+    return response.text();
+  } catch (error) {
+    console.error("Mentor AI Error:", error);
+    return "I'm sorry, I'm having trouble connecting to my brain right now. Please try asking again in a moment!";
+  }
 }
