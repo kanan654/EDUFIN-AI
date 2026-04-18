@@ -1,7 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 
 // Apni real API Key yahan quotation marks ke andar paste kar dein
-const apiKey = "AQ.Ab8RN6JjFzFpH2pdq4d_bvxVfKrd6KVeEss-TB9cJJNjUwBvtg"; 
+const apiKey = "AIzaSyCiknw1CvPT09T94ZzIiHGrjIZUi4T6CP4"; 
 
 const ai = new GoogleGenAI(apiKey);
 
