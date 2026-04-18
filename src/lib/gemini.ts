@@ -1,8 +1,9 @@
 import { GoogleGenAI } from "@google/genai";
 
-// 1. API Key Initialization
+// 1. API Key Initialization (Fixed Syntax for Browser)
 const apiKey = "AIzaSyAvehuUtM8KBByoTQVSmBNXlza3RSjHEBE"; 
-const ai = new GoogleGenAI(apiKey);
+// Dhyan se dekhiye: Maine yahan brackets {} add kiye hain
+const ai = new GoogleGenAI({ apiKey: apiKey });
 
 export const models = {
   flash: 'gemini-1.5-flash',
@@ -58,15 +59,14 @@ export async function getUniversityRecommendations(profile: any) {
   }
 }
 
-// 3. Mentor Response Function (Fixed History Logic)
+// 3. Mentor Response Function
 export async function getMentorResponse(history: any[], query: string) {
   try {
     const model = ai.getGenerativeModel({ 
       model: models.flash,
-      systemInstruction: "You are an expert Education Consultant and Financial Advisor for Indian students. Help them navigate university applications and education loans with practical, high-trust advice."
+      systemInstruction: "You are an expert Education Consultant and Financial Advisor for Indian students."
     });
 
-    // Gemini expects history in a specific role/parts format
     const chat = model.startChat({
       history: history.length > 0 ? history.map(h => ({
         role: h.role === 'user' ? 'user' : 'model',
