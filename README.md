@@ -1,7 +1,7 @@
 # EduFin AI 🎓💰
 ### The Unified AI-First Student Engagement & Financing Ecosystem
 
-EduFin AI is a cutting-edge platform designed to help Indian students navigate the complex journey of higher education and financing. By leveraging the **Gemini 3.5 Flash** model, it provides personalized academic and financial pathways.
+EduFin AI is a cutting-edge platform designed to help Indian students navigate the complex journey of higher education and financing. By leveraging advanced proprietary AI algorithms to provides personalized academic and financial pathways.
 
 ---
 
