@@ -1,7 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 
-// 1. Vite browser environment ke liye sahi API Key access
-const apiKey = import.meta.env.VITE_GEMINI_API_KEY || ""; 
+// Apni real API Key yahan quotation marks ke andar paste kar dein
+const apiKey = "AQ.Ab8RN6JjFzFpH2pdq4d_bvxVfKrd6KVeEss-TB9cJJNjUwBvtg"; 
 
 const ai = new GoogleGenAI(apiKey);
 
