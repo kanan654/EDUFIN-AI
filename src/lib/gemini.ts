@@ -1,10 +1,12 @@
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+// 1. Vite browser environment ke liye sahi API Key access
+const ai = new GoogleGenAI(import.meta.env.VITE_GEMINI_API_KEY);
 
+// 2. Models ke naam update kiye hain (Preview models kabhi kabhi fail ho jate hain)
 export const models = {
-  flash: 'gemini-3-flash-preview',
-  pro: 'gemini-3.1-pro-preview'
+  flash: 'gemini-1.5-flash',
+  pro: 'gemini-1.5-pro'
 };
 
 export async function getUniversityRecommendations(profile: any) {
@@ -27,15 +29,15 @@ export async function getUniversityRecommendations(profile: any) {
       "careerOutlook": "Strong growth in tech sectors..."
     }`;
 
-    const response = await ai.models.generateContent({
+    // 3. getGenerativeModel method use kiya hai jo latest SDK ka standard hai
+    const model = ai.getGenerativeModel({ 
       model: models.flash,
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-      }
+      generationConfig: { responseMimeType: "application/json" }
     });
 
-    const text = response.text;
+    const result = await model.generateContent(prompt);
+    const text = result.response.text();
+    
     if (!text) throw new Error("Empty AI response");
     
     const data = JSON.parse(text);
@@ -44,13 +46,13 @@ export async function getUniversityRecommendations(profile: any) {
     return data;
   } catch (error) {
     console.error("AI Recommendation Error:", error);
-    // FALLBACK MOCK DATA for Prototype stability
+    // FALLBACK MOCK DATA
     return {
       recommendations: [
         {
           name: profile.targetCountry === 'USA' ? "Stanford University" : "University of Toronto",
           country: profile.targetCountry,
-          courses: [profile.targetDegree, "Business Analytics"],
+          courses: [profile.targetDegree || "Computer Science", "Business Analytics"],
           ranking: "#1 Global",
           estimatedCost: "$50,000/year",
           roiScore: 95
@@ -58,7 +60,7 @@ export async function getUniversityRecommendations(profile: any) {
         {
           name: profile.targetCountry === 'USA' ? "MIT" : "University of British Columbia",
           country: profile.targetCountry,
-          courses: [profile.targetDegree, "Data Science"],
+          courses: [profile.targetDegree || "Engineering", "Data Science"],
           ranking: "#3 Global",
           estimatedCost: "$48,000/year",
           roiScore: 92
@@ -70,13 +72,18 @@ export async function getUniversityRecommendations(profile: any) {
 }
 
 export async function getMentorResponse(history: any[], query: string) {
-  const chat = ai.chats.create({
+  const model = ai.getGenerativeModel({ 
     model: models.flash,
-    config: {
-      systemInstruction: "You are an expert Education Consultant and Financial Advisor for Indian students. Help them navigate university applications and education loans with practical, high-trust advice."
-    }
+    systemInstruction: "You are an expert Education Consultant and Financial Advisor for Indian students. Help them navigate university applications and education loans with practical, high-trust advice."
   });
 
-  const response = await chat.sendMessage({ message: query });
-  return response.text;
+  const chat = model.startChat({
+    history: history.map(h => ({
+      role: h.role === 'user' ? 'user' : 'model',
+      parts: [{ text: h.content }]
+    }))
+  });
+
+  const result = await chat.sendMessage(query);
+  return result.response.text();
 }
