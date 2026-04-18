@@ -1,7 +1,9 @@
 import { GoogleGenAI } from "@google/genai";
 
 // 1. Vite browser environment ke liye sahi API Key access
-const ai = new GoogleGenAI(import.meta.env.VITE_GEMINI_API_KEY);
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY || ""; 
+
+const ai = new GoogleGenAI(apiKey);
 
 // 2. Models ke naam update kiye hain (Preview models kabhi kabhi fail ho jate hain)
 export const models = {
