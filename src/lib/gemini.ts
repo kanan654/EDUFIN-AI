@@ -1,8 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 
-// 1. API Key Initialization (Fixed Syntax for Browser)
 const apiKey = "AIzaSyAvehuUtM8KBByoTQVSmBNXlza3RSjHEBE"; 
-// Dhyan se dekhiye: Maine yahan brackets {} add kiye hain
 const ai = new GoogleGenAI({ apiKey: apiKey });
 
 export const models = {
@@ -10,30 +8,37 @@ export const models = {
   pro: 'gemini-1.5-pro'
 };
 
-// 2. University Recommendations Function
 export async function getUniversityRecommendations(profile: any) {
   try {
-    const prompt = `Based on this student profile, recommend 5 top universities and specific courses that fit their goals. 
-    Student Profile: ${JSON.stringify(profile)}
+    // Kanan, maine prompt ko aur clear kar diya hai taaki wo BBA ko prioritize kare
+    const prompt = `Act as a professional study abroad consultant. 
+    Analyze this student profile: ${JSON.stringify(profile)}.
+    The student wants to study: ${profile.course || 'the selected course'}.
+    The student's preferred country is: ${profile.country || 'the selected country'}.
+
+    Provide 5 specific university recommendations based on their interest in ${profile.course}.
     
     Return ONLY a JSON object exactly like this:
     {
       "recommendations": [
         {
-          "name": "University Name",
-          "country": "USA",
-          "courses": ["Data Science", "AI"],
-          "ranking": "#15 Global",
-          "estimatedCost": "$45,000/year",
-          "roiScore": 88
+          "name": "Actual University Name",
+          "country": "Actual Country",
+          "courses": ["Specific Course 1", "Specific Course 2"],
+          "ranking": "Global Rank",
+          "estimatedCost": "Cost in local currency",
+          "roiScore": 85
         }
       ],
-      "careerOutlook": "Strong growth in tech sectors..."
+      "careerOutlook": "Brief career growth details"
     }`;
 
     const model = ai.getGenerativeModel({ 
       model: models.flash,
-      generationConfig: { responseMimeType: "application/json" }
+      generationConfig: { 
+        responseMimeType: "application/json",
+        temperature: 0.7 // Isse variety badh jayegi
+      }
     });
 
     const result = await model.generateContent(prompt);
@@ -41,30 +46,22 @@ export async function getUniversityRecommendations(profile: any) {
     
     if (!text) throw new Error("Empty AI response");
     return JSON.parse(text);
+
   } catch (error) {
     console.error("AI Recommendation Error:", error);
+    // Agar AI fail ho jaye, toh ye empty dikhaye ya error message, Stanford nahi
     return {
-      recommendations: [
-        {
-          name: "Stanford University",
-          country: "USA",
-          courses: ["Computer Science"],
-          ranking: "#1 Global",
-          estimatedCost: "$50,000/year",
-          roiScore: 95
-        }
-      ],
-      careerOutlook: "High demand in global markets."
+      recommendations: [],
+      careerOutlook: "Sorry, I couldn't fetch specific recommendations. Please check your internet or try a different course."
     };
   }
 }
 
-// 3. Mentor Response Function
 export async function getMentorResponse(history: any[], query: string) {
   try {
     const model = ai.getGenerativeModel({ 
       model: models.flash,
-      systemInstruction: "You are an expert Education Consultant and Financial Advisor for Indian students."
+      systemInstruction: "You are an expert Education Consultant and Financial Advisor for Indian students. Always focus on the student's specific query."
     });
 
     const chat = model.startChat({
@@ -75,10 +72,9 @@ export async function getMentorResponse(history: any[], query: string) {
     });
 
     const result = await chat.sendMessage(query);
-    const response = await result.response;
-    return response.text();
+    return result.response.text();
   } catch (error) {
     console.error("Mentor AI Error:", error);
-    return "I'm sorry, I'm having trouble connecting to my brain right now. Please try asking again in a moment!";
+    return "I am facing a connection issue. Please try again.";
   }
 }
