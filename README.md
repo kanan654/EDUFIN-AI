@@ -1,20 +1,20 @@
 # EduFin AI 🎓💰
-### The Unified AI-First Student Engagement & Financing Ecosystem
+### A Unified Digital Ecosystem for Student Engagement & Financing
 
-EduFin AI is a cutting-edge platform designed to help Indian students navigate the complex journey of higher education and financing. By leveraging the **Gemini 3.5 Flash** model, it provides personalized academic and financial pathways.
+EduFin AI is a platform I built to empower Indian students as they navigate the complex landscape of global education. I integrated advanced analytical engines to provide personalized academic roadmaps and financial strategy tools.
 
 ---
 
 ## 🚀 Key Features
 
-### 🤖 AI Career Navigator
-Analyze your profile (CGPA, degree, budget) to find "High ROI" university matches. Powered by Gemini AI with a simulation of over 50,000+ courses.
+### 🤖 Career Navigator
+Analyze your profile (CGPA, degree, budget) to find "High ROI" university matches. This feature uses advanced simulation logic across over 50,000+ courses.
 
 ### 📊 ROI Predictor & Financial Health
 Visual analytics using **Recharts** to compare costs vs. future earning potential. Includes a "Financial Health Check" to predict borrowing capacity.
 
-### 💬 AI Personal Mentor 
-A 24/7 advisor capable of handling complex queries about visa regulations, application strategies, and loan documentation.
+### 💬 Smart Personal Mentor 
+An intelligent 24/7 advisor integrated into the app to handle complex queries about visa regulations, application strategies, and loan documentation.
 
 ### 💳 Loan Center
 Personalized loan quotes from top-tier partners (HDFC, ICICI, Prodigy) with dynamic credit-score simulation.
