@@ -29,6 +29,7 @@ export interface UniversityRecommendation {
   };
   notableAlumni: string[];
   history: string;
+  gallery: string[];
 }
 
 export interface LoanOffer {
