@@ -32,7 +32,13 @@ import {
   History,
   MoreVertical,
   BellRing,
-  Lock
+  Lock,
+  Mail,
+  Phone,
+  MapPin,
+  Building2,
+  CalendarDays,
+  ExternalLink
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -185,7 +191,15 @@ const Sidebar = ({ activeTab, setTab, profile }: { activeTab: string, setTab: (t
             <p className="font-bold text-sm truncate text-text">{profile.name}</p>
             <p className="text-[10px] text-muted truncate font-bold uppercase tracking-tight">{profile.currentEducation}</p>
           </div>
-          <LogOut className="w-4 h-4 text-muted hover:text-secondary cursor-pointer" />
+          <LogOut 
+            onClick={() => {
+              if (confirm('Are you sure you want to log out and clear your profile?')) {
+                localStorage.clear();
+                window.location.reload();
+              }
+            }}
+            className="w-4 h-4 text-muted hover:text-secondary cursor-pointer transition-colors" 
+          />
         </div>
       </div>
     </div>
@@ -224,6 +238,7 @@ export default function App() {
   const [notifications, setNotifications] = useState<AppNotification[]>(INITIAL_NOTIFICATIONS);
   const [documents, setDocuments] = useState<Document[]>(INITIAL_DOCS);
   const [showNotificationPanel, setShowNotificationPanel] = useState(false);
+  const [showRewardsModal, setShowRewardsModal] = useState(false);
 
   const [hasStartedLoan, setHasStartedLoan] = useState<boolean>(() => {
     return localStorage.getItem('edufin_loan_started') === 'true';
@@ -234,10 +249,22 @@ export default function App() {
   });
   const [showToast, setShowToast] = useState(false);
   const [showFinalSummary, setShowFinalSummary] = useState(false);
+  const [selectedUnivForDetails, setSelectedUnivForDetails] = useState<UniversityRecommendation | null>(null);
 
   // Growth Engine Simulation: Streaks & Notifications
-  const [streak] = useState(5);
-  const [points] = useState(1250);
+  const [streak, setStreak] = useState(() => {
+    const saved = localStorage.getItem('edufin_streak');
+    return saved ? parseInt(saved) : 5;
+  });
+  const [points, setPoints] = useState(() => {
+    const saved = localStorage.getItem('edufin_points');
+    return saved ? parseInt(saved) : 1250;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('edufin_streak', streak.toString());
+    localStorage.setItem('edufin_points', points.toString());
+  }, [streak, points]);
 
   useEffect(() => {
     if (profile) localStorage.setItem('edufin_profile', JSON.stringify(profile));
@@ -261,6 +288,7 @@ export default function App() {
 
   const handleLoanApply = () => {
     setHasStartedLoan(true);
+    setPoints(prev => prev + 500); // Award points for milestone
     confetti({
       particleCount: 150,
       spread: 70,
@@ -306,7 +334,12 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="bg-white px-5 py-2.5 rounded-2xl vibrant-shadow border border-border flex items-center gap-5">
+            <motion.button 
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setShowRewardsModal(true)}
+              className="bg-white px-5 py-2.5 rounded-2xl vibrant-shadow border border-border flex items-center gap-5 cursor-pointer"
+            >
               <div className="flex flex-col items-end">
                 <span className="text-[10px] text-muted font-black uppercase tracking-widest">Points</span>
                 <span className="font-mono font-black text-primary text-lg leading-none">{points}</span>
@@ -316,9 +349,13 @@ export default function App() {
                 <span className="text-[10px] text-muted font-black uppercase tracking-widest">Streak</span>
                 <span className="font-mono font-black text-secondary text-lg leading-none">{streak}🔥</span>
               </div>
-            </div>
+            </motion.button>
             <button 
-              onClick={() => setShowNotificationPanel(true)}
+              onClick={() => {
+                setShowNotificationPanel(true);
+                // Mark all as read when opening panel
+                setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+              }}
               className="p-3 bg-white rounded-2xl vibrant-shadow border border-border relative text-muted hover:text-primary transition-colors"
             >
               <Bell className="w-5 h-5" />
@@ -355,10 +392,19 @@ export default function App() {
                 </div>
                 <div className="flex-1 overflow-y-auto p-6 space-y-4">
                   {notifications.map(n => (
-                    <div key={n.id} className={cn(
-                      "p-5 rounded-2xl border transition-all cursor-pointer",
-                      n.read ? "bg-bg/10 border-transparent" : "bg-white border-primary/20 shadow-lg shadow-primary/5"
-                    )}>
+                    <div 
+                      key={n.id} 
+                      onClick={() => {
+                        setNotifications(prev => prev.map(notif => 
+                          notif.id === n.id ? { ...notif, read: true } : notif
+                        ));
+                      }}
+                      className={cn(
+                        "p-5 rounded-2xl border transition-all cursor-pointer relative",
+                        n.read ? "bg-bg/10 border-transparent" : "bg-white border-primary/20 shadow-lg shadow-primary/5"
+                      )}
+                    >
+                      {!n.read && <div className="absolute top-5 right-5 w-2 h-2 bg-secondary rounded-full animate-pulse" />}
                       <div className="flex justify-between items-start mb-1">
                         <span className={cn(
                           "text-[9px] font-black uppercase px-2 py-0.5 rounded",
@@ -578,7 +624,25 @@ export default function App() {
                   <h3 className="font-black text-[12px] uppercase tracking-[0.2em] text-muted mb-6">EduFin Daily Feed</h3>
                   <div className="space-y-6">
                     {INITIAL_KNOWLEDGE.map(bite => (
-                      <div key={bite.id} className="group cursor-pointer">
+                      <div 
+                        key={bite.id} 
+                        onClick={() => {
+                          const toast = document.createElement('div');
+                          toast.className = 'fixed inset-0 flex items-center justify-center z-[300] p-6';
+                          toast.innerHTML = `
+                            <div class="bg-white p-10 rounded-[40px] shadow-2xl border border-border max-w-sm w-full animate-in zoom-in-95">
+                              <div class="text-[10px] font-black uppercase text-primary mb-2">${bite.category} • ${bite.date}</div>
+                              <h3 class="text-2xl font-black text-text mb-4">${bite.title}</h3>
+                              <p class="text-sm text-muted font-medium leading-relaxed">${bite.content}</p>
+                              <button class="w-full mt-8 py-4 bg-text text-white rounded-2xl font-black uppercase text-xs transition-all hover:bg-primary">Close Article</button>
+                            </div>
+                          `;
+                          document.body.appendChild(toast);
+                          toast.querySelector('button')?.addEventListener('click', () => toast.remove());
+                          toast.addEventListener('click', (e) => e.target === toast && toast.remove());
+                        }}
+                        className="group cursor-pointer p-4 -mx-4 rounded-2xl hover:bg-bg/50 transition-colors"
+                      >
                         <div className="flex justify-between items-start mb-2">
                           <span className={cn(
                             "text-[10px] font-black px-2.5 py-1 rounded uppercase tracking-tighter shadow-sm",
@@ -619,6 +683,7 @@ export default function App() {
                 setSelectedUniv(univ);
                 setActiveTab('loans');
               }}
+              onSelectDetails={(univ: UniversityRecommendation) => setSelectedUnivForDetails(univ)}
               selectedUniv={selectedUniv}
             />
           )}
@@ -658,6 +723,80 @@ export default function App() {
       </main>
 
       <AnimatePresence>
+        {showRewardsModal && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowRewardsModal(false)}
+              className="fixed inset-0 bg-text/40 backdrop-blur-md z-[200]"
+            />
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-[40px] p-10 z-[210] shadow-2xl border border-border"
+            >
+              <div className="text-center space-y-6">
+                <div className="w-20 h-20 bg-primary/10 rounded-3xl mx-auto flex items-center justify-center text-primary">
+                  <Sparkles className="w-10 h-10" />
+                </div>
+                <div>
+                  <h2 className="text-3xl font-black text-text">Your Rewards Dashboard</h2>
+                  <p className="text-muted font-medium mt-1">Keep using EduFin AI to unlock more milestones!</p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-6 bg-bg rounded-3xl border border-border text-center">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-muted block mb-2">Lifetime Points</span>
+                    <span className="text-3xl font-mono font-black text-primary">{points}</span>
+                  </div>
+                  <div className="p-6 bg-bg rounded-3xl border border-border text-center">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-muted block mb-2">Daily Streak</span>
+                    <span className="text-3xl font-mono font-black text-secondary">{streak}🔥</span>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center p-4 bg-primary/5 rounded-2xl text-left">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-white rounded-lg">
+                         <Search className="w-4 h-4 text-primary" />
+                      </div>
+                      <span className="text-xs font-bold text-text">Daily University Search</span>
+                    </div>
+                    <span className="text-xs font-black text-emerald-500">+50 pts</span>
+                  </div>
+                  <div className="flex justify-between items-center p-4 bg-bg rounded-2xl text-left opacity-50">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-white rounded-lg">
+                         <Briefcase className="w-4 h-4 text-muted" />
+                      </div>
+                      <span className="text-xs font-bold text-text">Submit Visa Draft</span>
+                    </div>
+                    <span className="text-xs font-black text-muted">+200 pts</span>
+                  </div>
+                </div>
+
+                <button 
+                  onClick={() => setShowRewardsModal(false)}
+                  className="w-full py-4 bg-text text-white rounded-2xl font-black uppercase tracking-[0.2em] text-xs transition-all hover:bg-primary"
+                >
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+
+        {selectedUnivForDetails && (
+          <UniversityProfileModal 
+            univ={selectedUnivForDetails} 
+            onClose={() => setSelectedUnivForDetails(null)} 
+          />
+        )}
+
         {showFinalSummary && selectedUniv && (
           <EnrollmentSummary 
             selectedUniv={selectedUniv} 
@@ -860,7 +999,7 @@ function Onboarding({ onComplete }: { onComplete: (p: UserProfile) => void }) {
   );
 }
 
-function Navigator({ profile, isLoading, onSearch, recommendations, onSelect, selectedUniv }: any) {
+function Navigator({ profile, isLoading, onSearch, recommendations, onSelect, selectedUniv, onSelectDetails }: any) {
   return (
     <div className="space-y-8">
       <div className="bg-card p-10 rounded-[32px] vibrant-shadow border border-border flex flex-col md:flex-row gap-10 items-center overflow-hidden relative">
@@ -889,16 +1028,31 @@ function Navigator({ profile, isLoading, onSearch, recommendations, onSelect, se
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: idx * 0.1 }}
+            onClick={() => onSelectDetails(univ)}
             className="bg-card p-8 rounded-[32px] vibrant-shadow border border-border group hover:border-primary/30 transition-all cursor-pointer overflow-hidden relative"
           >
+            <div className="absolute top-6 left-6 flex items-center gap-2 z-20">
+              <span className={cn(
+                "font-black text-[9px] px-2.5 py-1 rounded uppercase tracking-[0.1em]",
+                univ.tier === 1 ? "bg-amber-100 text-amber-600 border border-amber-200" :
+                univ.tier === 2 ? "bg-slate-100 text-slate-600 border border-slate-200" :
+                "bg-blue-50 text-blue-500 border border-blue-100"
+              )}>
+                Tier {univ.tier}
+              </span>
+            </div>
             <div className="probability-badge absolute top-6 right-6 bg-accent/20 text-accent font-black text-[11px] px-4 py-1.5 rounded-full uppercase tracking-widest z-20">
               {idx % 3 === 0 ? '92% Prob.' : idx % 3 === 1 ? '78% Prob.' : '64% Prob.'}
             </div>
             
             <div className="relative z-10 flex flex-col h-full gap-5">
-              <div className="flex items-center gap-5">
-                <div className="w-16 h-16 bg-bg rounded-2xl border border-border flex items-center justify-center font-black text-2xl text-primary shadow-sm group-hover:bg-primary/5 transition-colors">
-                  {univ.name.charAt(0)}
+              <div className="flex items-center gap-5 mt-6">
+                <div className="w-16 h-16 bg-bg rounded-2xl border border-border flex items-center justify-center font-black text-2xl text-primary shadow-sm group-hover:bg-primary/5 transition-colors overflow-hidden">
+                  {univ.image ? (
+                    <img src={univ.image} alt={univ.name} className="w-full h-full object-cover"  referrerPolicy="no-referrer" />
+                  ) : (
+                    univ.name.charAt(0)
+                  )}
                 </div>
                 <div>
                   <h4 className="font-black text-xl text-text leading-tight group-hover:text-primary transition-colors">{univ.name}</h4>
@@ -929,7 +1083,10 @@ function Navigator({ profile, isLoading, onSearch, recommendations, onSelect, se
               </div>
 
               <button 
-                onClick={() => onSelect(univ)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelect(univ);
+                }}
                 className={cn(
                   "w-full py-4 rounded-2xl font-black uppercase text-xs tracking-widest transition-all",
                   selectedUniv?.name === univ.name 
@@ -1599,5 +1756,181 @@ function EnrollmentSummary({ selectedUniv, profile, onClose }: any) {
         </div>
       </motion.div>
     </motion.div>
+  );
+}
+
+function UniversityProfileModal({ univ, onClose }: { univ: UniversityRecommendation, onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 md:p-8">
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        className="fixed inset-0 bg-text/60 backdrop-blur-xl"
+      />
+      
+      <motion.div 
+        initial={{ scale: 0.9, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.9, opacity: 0, y: 20 }}
+        className="w-full max-w-5xl bg-bg rounded-[48px] shadow-2xl relative overflow-hidden flex flex-col md:flex-row h-[90vh]"
+      >
+        <button 
+          onClick={onClose} 
+          className="absolute top-6 right-6 z-50 p-3 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/40 transition-all border border-white/20"
+        >
+          <LogOut className="w-6 h-6 rotate-180" />
+        </button>
+
+        {/* Left Span: Visual & Top Info */}
+        <div className="w-full md:w-2/5 relative overflow-hidden">
+          <img 
+            src={univ.image || `https://picsum.photos/seed/${univ.name}/1000/1200`} 
+            alt={univ.name} 
+            className="w-full h-full object-cover"
+            referrerPolicy="no-referrer"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-text/90 via-text/20 to-transparent flex flex-col justify-end p-12">
+            <div className="flex items-center gap-3 mb-4">
+              <span className={cn(
+                "px-4 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest",
+                univ.tier === 1 ? "bg-amber-400 text-text" : "bg-white text-text"
+              )}>
+                Tier {univ.tier} Member
+              </span>
+              <span className="px-4 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest bg-primary/20 text-white border border-white/20 backdrop-blur-sm">
+                Rank #{univ.ranking}
+              </span>
+            </div>
+            <h2 className="text-5xl font-black text-white tracking-tighter leading-none mb-4">{univ.name}</h2>
+            <p className="text-white/80 font-bold text-lg mb-6 italic">"{univ.description}"</p>
+            
+            <div className="flex gap-4">
+               <div className="flex flex-col">
+                  <span className="text-white/40 text-[9px] font-black uppercase tracking-widest">Global ROI</span>
+                  <span className="text-3xl font-mono font-black text-white">{univ.roiScore}%</span>
+               </div>
+               <div className="w-[1px] h-10 bg-white/20 mx-2" />
+               <div className="flex flex-col">
+                  <span className="text-white/40 text-[9px] font-black uppercase tracking-widest">Est. Yearly Cost</span>
+                  <span className="text-3xl font-mono font-black text-white">{univ.estimatedCost}</span>
+               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Span: Records & Data */}
+        <div className="flex-1 overflow-y-auto bg-white p-8 md:p-14 space-y-12 scrollbar-none">
+          {/* Section 1: Contacts & Reception */}
+          <section>
+            <h3 className="text-[12px] font-black uppercase tracking-[0.2em] text-muted mb-8 flex items-center gap-3">
+              <Building2 className="w-5 h-5 text-primary" /> Official Reception & Channels
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-6">
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-bg rounded-2xl text-primary">
+                    <Mail className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black uppercase text-muted tracking-tight">Admissions Email</p>
+                    <p className="font-bold text-text">{univ.contact?.email || 'admissions@university.edu'}</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-bg rounded-2xl text-primary">
+                    <Phone className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black uppercase text-muted tracking-tight">Direct Line</p>
+                    <p className="font-bold text-text">{univ.contact?.phone || '+1-000-0000'}</p>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-start gap-4 p-6 bg-bg/50 rounded-[32px] border border-border">
+                <div className="p-3 bg-white rounded-2xl text-primary shadow-sm">
+                  <MapPin className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-black uppercase text-muted tracking-tight mb-1">Campus Reception</p>
+                  <p className="text-sm font-bold text-text leading-relaxed">{univ.contact?.reception || 'Campus Contact Desk, Main Hall'}</p>
+                  <button className="mt-3 flex items-center gap-2 text-[10px] font-black text-primary uppercase hover:underline">
+                    View on Map <ExternalLink className="w-3 h-3" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Section 2: Placements & Economic Data */}
+          <section>
+            <h3 className="text-[12px] font-black uppercase tracking-[0.2em] text-muted mb-8 flex items-center gap-3">
+              <TrendingUp className="w-5 h-5 text-secondary" /> Placement & ROI Records
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="md:col-span-1 p-8 bg-text text-white rounded-[32px] shadow-xl relative overflow-hidden">
+                <div className="relative z-10">
+                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/50 mb-1">Average Graduate Salary</p>
+                  <p className="text-3xl font-mono font-black">{univ.placements?.avgPackage || '$95,000'}</p>
+                </div>
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-2xl" />
+              </div>
+              <div className="md:col-span-2 p-8 bg-bg rounded-[32px] border border-border">
+                 <p className="text-[10px] font-black uppercase text-muted mb-4 tracking-widest">Top Global Recruiters</p>
+                 <div className="flex flex-wrap gap-3">
+                   {(univ.placements?.topRecruiters || ['Google', 'Microsoft', 'Deloitte']).map(r => (
+                     <span key={r} className="px-5 py-2.5 bg-white rounded-xl border border-border font-black text-xs text-text shadow-sm">{r}</span>
+                   ))}
+                 </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Section 3: Alumni & History */}
+          <section className="grid grid-cols-1 md:grid-cols-2 gap-12">
+            <div>
+              <h3 className="text-[12px] font-black uppercase tracking-[0.2em] text-muted mb-6 flex items-center gap-3">
+                <Users className="w-5 h-5 text-accent" /> Notable Alumni
+              </h3>
+              <div className="space-y-4">
+                {(univ.notableAlumni || ['Prominent Industry Leader', 'Acclaimed Researcher']).map((a, i) => (
+                  <div key={i} className="flex items-center gap-4 group">
+                    <div className="w-10 h-10 rounded-[35%] bg-accent/10 flex items-center justify-center font-black text-accent text-sm group-hover:bg-accent group-hover:text-white transition-all transform group-hover:rotate-12">
+                      {i + 1}
+                    </div>
+                    <span className="font-bold text-text text-lg tracking-tight group-hover:translate-x-1 transition-transform">{a}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div>
+              <h3 className="text-[12px] font-black uppercase tracking-[0.2em] text-muted mb-6 flex items-center gap-3">
+                <History className="w-5 h-5 text-primary" /> Legacy & Records
+              </h3>
+              <div className="p-8 bg-bg rounded-[40px] border border-border relative">
+                 <p className="text-sm font-medium text-muted leading-relaxed italic relative z-10">"{univ.history || 'A long-standing tradition of academic excellence and research innovation.'}"</p>
+                 <div className="mt-6 flex items-center gap-3">
+                   <div className="w-12 h-1 bg-primary/20 rounded-full" />
+                   <span className="text-[10px] font-black uppercase text-primary/50">ESTABLISHED RESEARCH CENTER</span>
+                 </div>
+              </div>
+            </div>
+          </section>
+
+          <div className="pt-8 flex flex-col gap-4">
+            <button 
+              onClick={() => {
+                onClose();
+              }}
+              className="w-full py-6 bg-primary text-white rounded-[24px] font-black uppercase tracking-[0.2em] shadow-2xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3"
+            >
+              Start Enrollment Track <Sparkles className="w-5 h-5" />
+            </button>
+            <p className="text-center text-[10px] text-muted font-bold uppercase tracking-widest">Connect directly via official channels above for verified information.</p>
+          </div>
+        </div>
+      </motion.div>
+    </div>
   );
 }
