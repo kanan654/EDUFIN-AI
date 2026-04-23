@@ -529,9 +529,17 @@ export default function App() {
                     <span className="text-emerald-400 text-xs font-black pb-1">+0.12% 📈</span>
                   </div>
                   <p className="text-xs font-bold text-white/60 relative z-10 leading-relaxed mb-6">Rates optimized for education remittances. Transfer now to save ₹4,500 on commissions.</p>
-                  <button className="w-full py-4 bg-white/10 hover:bg-white/20 rounded-2xl border border-white/10 text-[10px] font-black uppercase tracking-widest transition-colors relative z-10">Open Forex Desk</button>
+                  <button 
+                    onClick={() => setActiveTab('loans')}
+                    className="w-full py-4 bg-white/10 hover:bg-white/20 rounded-2xl border border-white/10 text-[10px] font-black uppercase tracking-widest transition-colors relative z-10"
+                  >
+                    Open Forex Desk
+                  </button>
                 </div>
-                <div className="ai-gradient rounded-[32px] p-8 text-white vibrant-shadow transition-all hover:scale-[1.03] cursor-pointer group">
+                <div 
+                  onClick={() => setActiveTab('navigator')}
+                  className="ai-gradient rounded-[32px] p-8 text-white vibrant-shadow transition-all hover:scale-[1.03] cursor-pointer group"
+                >
                   <div className="flex items-center gap-3 mb-5">
                     <Sparkles className="w-6 h-6 text-indigo-100" />
                     <span className="text-[11px] font-black uppercase tracking-[0.2em] text-indigo-50">AI Career Insights</span>
@@ -1074,7 +1082,18 @@ function LoanCenter({ profile, onApply, selectedUniv }: any) {
             >
               {selectedUniv ? "Apply for Enrollment Loan" : "Select University First"}
             </button>
-            <button className="px-10 py-5 bg-white border-2 border-border rounded-2xl font-black text-muted hover:bg-bg transition-all">Relook Eligibility</button>
+            <button 
+              onClick={() => {
+                const toast = document.createElement('div');
+                toast.className = 'fixed bottom-10 left-1/2 -translate-x-1/2 bg-text text-white px-8 py-4 rounded-2xl font-black uppercase text-xs z-[300] shadow-2xl animate-in slide-in-from-bottom-5';
+                toast.innerText = 'Eligibility Re-analyzed • Tier 1 Consistent';
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 3000);
+              }}
+              className="px-10 py-5 bg-white border-2 border-border rounded-2xl font-black text-muted hover:bg-bg transition-all"
+            >
+              Relook Eligibility
+            </button>
           </div>
         </div>
         <div className="w-1/3 flex justify-end relative z-10">
@@ -1223,8 +1242,24 @@ function DocVault({ documents, onUpload }: { documents: Document[], onUpload: (d
               </div>
 
               <div className="flex gap-4">
-                <button className="flex-1 py-4 bg-text text-white rounded-2xl font-black uppercase text-xs tracking-[0.2em] hover:bg-primary transition-all">Download Copy</button>
-                <button className="flex-1 py-4 bg-bg rounded-2xl font-black uppercase text-xs tracking-[0.2em] text-muted hover:bg-border transition-all">Replace</button>
+                <button 
+                  onClick={() => {
+                    const toast = document.createElement('div');
+                    toast.className = 'fixed top-10 left-1/2 -translate-x-1/2 bg-emerald-500 text-white px-8 py-4 rounded-2xl font-black uppercase text-xs z-[300] shadow-2xl animate-in slide-in-from-top-5';
+                    toast.innerText = `Downloading ${selectedDoc.name}...`;
+                    document.body.appendChild(toast);
+                    setTimeout(() => toast.remove(), 3000);
+                  }}
+                  className="flex-1 py-4 bg-text text-white rounded-2xl font-black uppercase text-xs tracking-[0.2em] hover:bg-primary transition-all"
+                >
+                  Download Copy
+                </button>
+                <button 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex-1 py-4 bg-bg rounded-2xl font-black uppercase text-xs tracking-[0.2em] text-muted hover:bg-border transition-all"
+                >
+                  Replace
+                </button>
               </div>
             </motion.div>
           </motion.div>
@@ -1304,8 +1339,35 @@ function CommunityHub() {
              <div className="w-12 h-12 bg-bg rounded-2xl flex items-center justify-center text-muted">
                 <User className="w-6 h-6" />
              </div>
-             <input type="text" placeholder="Share your win with the global community..." className="flex-1 bg-transparent focus:outline-none font-bold text-text" />
-             <button className="p-3 bg-primary text-white rounded-xl"><Send className="w-5 h-5" /></button>
+             <input 
+              type="text" 
+              placeholder="Share your win with the global community..." 
+              className="flex-1 bg-transparent focus:outline-none font-bold text-text" 
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  const toast = document.createElement('div');
+                  toast.className = 'fixed bottom-10 right-10 bg-primary text-white px-8 py-4 rounded-2xl font-black uppercase text-xs z-[300] shadow-2xl animate-in fade-in slide-in-from-right-5';
+                  toast.innerText = 'Post Published! 🚀';
+                  document.body.appendChild(toast);
+                  setTimeout(() => toast.remove(), 3000);
+                  (e.target as HTMLInputElement).value = '';
+                }
+              }}
+            />
+             <button 
+              onClick={() => {
+                const toast = document.createElement('div');
+                toast.className = 'fixed bottom-10 right-10 bg-primary text-white px-8 py-4 rounded-2xl font-black uppercase text-xs z-[300] shadow-2xl animate-in fade-in slide-in-from-right-5';
+                toast.innerText = 'Post Published! 🚀';
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 3000);
+                const input = document.querySelector('input[placeholder="Share your win with the global community..."]') as HTMLInputElement;
+                if (input) input.value = '';
+              }}
+              className="p-3 bg-primary text-white rounded-xl active:scale-90 transition-transform"
+             >
+                <Send className="w-5 h-5" />
+             </button>
           </div>
 
           <div className="space-y-6">
@@ -1321,8 +1383,26 @@ function CommunityHub() {
                     </div>
                     <p className="text-sm font-medium text-muted leading-relaxed">{post.message}</p>
                     <div className="mt-4 flex gap-4">
-                       <button className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline">Support</button>
-                       <button className="text-[10px] font-black text-muted uppercase tracking-widest hover:underline">Comment</button>
+                       <button 
+                        onClick={(e) => {
+                          const btn = e.currentTarget;
+                          btn.innerText = 'Supported! ❤️';
+                          btn.classList.add('text-accent');
+                        }}
+                        className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline"
+                       >
+                        Support
+                       </button>
+                       <button 
+                        onClick={(e) => {
+                          const btn = e.currentTarget;
+                          btn.innerText = 'Opening Thread...';
+                          setTimeout(() => btn.innerText = 'Comment', 2000);
+                        }}
+                        className="text-[10px] font-black text-muted uppercase tracking-widest hover:underline"
+                       >
+                        Comment
+                       </button>
                     </div>
                  </div>
               </div>
