@@ -40,7 +40,12 @@ export async function getUniversityRecommendations(profile: any) {
             "topRecruiters": ["Google", "NASA", "Goldman Sachs"]
           },
           "notableAlumni": ["Person Name", "Famous Scientist"],
-          "history": "Brief 1-sentence history of heritage or growth."
+          "history": "Brief 1-sentence history of heritage or growth.",
+          "gallery": [
+            "https://images.unsplash.com/photo-1562774053-701939374585?auto=format",
+            "https://images.unsplash.com/photo-1541339907198-e08756eaa43f?auto=format",
+            "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format"
+          ]
         }
       ],
       "careerOutlook": "Strong growth in tech sectors..."
@@ -86,7 +91,12 @@ export async function getUniversityRecommendations(profile: any) {
             "topRecruiters": ["Google", "Apple", "OpenAI"]
           },
           notableAlumni: ["Herbert Hoover", "Sally Ride", "Elon Musk"],
-          history: "Founded in 1885 by Leland and Jane Stanford in memory of their only child."
+          history: "Founded in 1885 by Leland and Jane Stanford in memory of their only child.",
+          gallery: [
+            "https://images.unsplash.com/photo-1541339907198-e08756eaa43f?auto=format",
+            "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format",
+            "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format"
+          ]
         },
         {
           name: profile.targetCountry === 'USA' ? "MIT" : "London School of Economics",
@@ -108,7 +118,12 @@ export async function getUniversityRecommendations(profile: any) {
             "topRecruiters": ["SpaceX", "Intel", "Microsoft"]
           },
           notableAlumni: ["Buzz Aldrin", "Kofi Annan"],
-          history: "Established in 1861 in response to the increasing industrialization of the United States."
+          history: "Established in 1861 in response to the increasing industrialization of the United States.",
+          gallery: [
+            "https://images.unsplash.com/photo-1564981797816-1043664bf78d?auto=format",
+            "https://images.unsplash.com/photo-1498243639351-a6c9af82a74c?auto=format",
+            "https://images.unsplash.com/photo-1541339907198-e08756eaa43f?auto=format"
+          ]
         }
       ],
       careerOutlook: "Excellent prospects in your chosen field. (Note: Using enhanced interactive data)"
