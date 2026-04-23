@@ -1918,6 +1918,33 @@ function UniversityProfileModal({ univ, onClose }: { univ: UniversityRecommendat
             </div>
           </section>
 
+          {/* Section 4: Campus Gallery */}
+          <section>
+            <h3 className="text-[12px] font-black uppercase tracking-[0.2em] text-muted mb-8 flex items-center gap-3">
+              <LogOut className="w-5 h-5 text-indigo-500 -rotate-90" /> Campus Gallery
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {(univ.gallery || [
+                `https://picsum.photos/seed/${univ.name}1/800/600`,
+                `https://picsum.photos/seed/${univ.name}2/800/600`,
+                `https://picsum.photos/seed/${univ.name}3/800/600`
+              ]).map((img, i) => (
+                <motion.div 
+                  key={i}
+                  whileHover={{ scale: 1.05 }}
+                  className="aspect-[4/3] rounded-3xl overflow-hidden border border-border bg-bg"
+                >
+                  <img 
+                    src={img} 
+                    alt={`Campus ${i+1}`} 
+                    className="w-full h-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                </motion.div>
+              ))}
+            </div>
+          </section>
+
           <div className="pt-8 flex flex-col gap-4">
             <button 
               onClick={() => {
