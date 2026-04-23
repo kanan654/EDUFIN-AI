@@ -15,6 +15,20 @@ export interface UniversityRecommendation {
   ranking: string;
   estimatedCost: string;
   roiScore: number;
+  description: string;
+  tier: 1 | 2 | 3;
+  image: string;
+  contact: {
+    email: string;
+    phone: string;
+    reception: string;
+  };
+  placements: {
+    avgPackage: string;
+    topRecruiters: string[];
+  };
+  notableAlumni: string[];
+  history: string;
 }
 
 export interface LoanOffer {
