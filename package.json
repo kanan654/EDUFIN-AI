@@ -1,5 +1,5 @@
 {
-  "name": "react-example",
+  "name": "edufin-ai",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit"
+    "server": "node server/index.js"
   },
   "dependencies": {
     "@google/genai": "^1.29.0",
